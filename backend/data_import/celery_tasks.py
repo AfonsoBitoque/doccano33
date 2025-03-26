@@ -31,6 +31,9 @@ def check_uploaded_files(upload_ids: List[str], file_format: Format):
     errors: List[FileImportException] = []
     cleaned_ids = []
     temporary_uploads = TemporaryUpload.objects.filter(upload_id__in=upload_ids)
+    if not temporary_uploads.exists():
+        return [], []
+
     for tu in temporary_uploads:
         if tu.file.size > settings.MAX_UPLOAD_SIZE:
             errors.append(MaximumFileSizeException(tu.upload_name, settings.MAX_UPLOAD_SIZE))
@@ -53,6 +56,9 @@ def import_dataset(user_id, project_id, file_format: str, upload_ids: List[str],
     try:
         fmt = create_file_format(file_format)
         upload_ids, errors = check_uploaded_files(upload_ids, fmt)
+        if not upload_ids:
+            return {"error": [e.dict() for e in errors] + ["No valid files to import."]}
+
         temporary_uploads = TemporaryUpload.objects.filter(upload_id__in=upload_ids)
         filenames = [
             FileName(full_path=tu.get_file_path(), generated_name=tu.file.name, upload_name=tu.upload_name)

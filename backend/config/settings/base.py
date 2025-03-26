@@ -20,7 +20,8 @@ from furl import furl
 BASE_DIR = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 env = Env()
-env.read_env(path.join(BASE_DIR, ".env"), recurse=False)
+env.read_env(path.join(BASE_DIR, "backend", ".env"), recurse=False)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -57,7 +58,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_yasg",
     "allauth",
-    "allauth.account",
+    "users.apps.CustomAccountConfig",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.okta",
     "dj_rest_auth",
@@ -84,6 +85,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    
 ]
 
 
@@ -264,7 +266,8 @@ ENABLE_FILE_TYPE_CHECK = env.bool("ENABLE_FILE_TYPE_CHECK", False)
 
 # Celery settings
 DJANGO_CELERY_RESULTS_TASK_ID_MAX_LENGTH = 191
-CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", "django-db")
+
 try:
     CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 except EnvError:

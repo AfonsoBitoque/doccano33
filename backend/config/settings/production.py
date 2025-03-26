@@ -1,7 +1,8 @@
 from .base import *  # noqa: F401,F403
-
+import os
+from dotenv import load_dotenv
 DEBUG = False
-
+load_dotenv()
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

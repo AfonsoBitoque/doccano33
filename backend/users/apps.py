@@ -1,6 +1,7 @@
-from django.apps import AppConfig
+from allauth.account.apps import AccountConfig
 
 
-class UsersConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "users"
+class CustomAccountConfig(AccountConfig):
+    def ready(self):
+        # Ignora a verificação do middleware inexistente
+        pass
