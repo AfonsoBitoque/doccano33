@@ -80,20 +80,24 @@ export default {
 
     const { fetch } = useFetch(async () => {
       await getExample(projectId, query.value)
-      if (enableAutoLabeling.value) {
+      if (enableAutoLabeling.value && exampleState.example && exampleState.example.id) {
         try {
           await autoLabel(projectId, exampleState.example.id)
         } catch (e) {
           enableAutoLabeling.value = false
         }
-      } else {
+      } else if (exampleState.example && exampleState.example.id) {
         await list(exampleState.example.id)
       }
     })
     watch(query, fetch)
     watch(enableAutoLabeling, async (val) => {
-      if (val && !exampleState.example.isConfirmed) {
-        await autoLabel(exampleState.example.id)
+      if (val && 
+          exampleState.example && 
+          exampleState.example.id && 
+          !exampleState.example.isConfirmed) {
+        await autoLabel(projectId, exampleState.example.id)
+        await getTeacherList(projectId, exampleState.example.id)
       }
     })
 

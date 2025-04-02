@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Sincronização de Perspectivas</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .perspective { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        textarea { width: 100%; padding: 10px; margin-bottom: 10px; }
+        button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Teste de Sincronização de Perspectivas</h1>
+        <p>Este arquivo permite testar o mecanismo de sincronização de perspectivas entre diferentes abas do navegador.</p>
+        
+        <h2>Adicionar Perspectiva</h2>
+        <textarea id="newPerspective" placeholder="Digite sua perspectiva aqui"></textarea>
+        <button onclick="addPerspective()">Adicionar</button>
+        
+        <h2>Perspectivas</h2>
+        <div id="perspectivesList"></div>
+    </div>
+
+    <script>
+        // Simular ID de projeto
+        const projectId = '123';
+        const storageKey = `perspectives_${projectId}`;
+        let perspectives = [];
+        let nextId = 1;
+
+        // Carregar perspectivas do localStorage
+        function loadPerspectives() {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                perspectives = JSON.parse(saved);
+                if (perspectives.length > 0) {
+                    nextId = Math.max(...perspectives.map(p => p.id)) + 1;
+                }
+            }
+            renderPerspectives();
+        }
+
+        // Salvar perspectivas no localStorage
+        function savePerspectives() {
+            localStorage.setItem(storageKey, JSON.stringify(perspectives));
+        }
+
+        // Adicionar nova perspectiva
+        function addPerspective() {
+            const text = document.getElementById('newPerspective').value.trim();
+            if (!text) return;
+
+            const now = new Date().toISOString();
+            const newPerspective = {
+                id: nextId++,
+                user: 1, // ID de usuário simulado
+                username: 'Usuário Teste',
+                text: text,
+                createdAt: now,
+                updatedAt: now
+            };
+
+            perspectives.unshift(newPerspective);
+            savePerspectives();
+            document.getElementById('newPerspective').value = '';
+            renderPerspectives();
+        }
+
+        // Renderizar lista de perspectivas
+        function renderPerspectives() {
+            const list = document.getElementById('perspectivesList');
+            list.innerHTML = '';
+            
+            if (perspectives.length === 0) {
+                list.innerHTML = '<p>Nenhuma perspectiva compartilhada ainda.</p>';
+                return;
+            }
+
+            perspectives.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'perspective';
+                div.innerHTML = `
+                    <strong>${p.username}</strong> - 
+                    ${new Date(p.createdAt).toLocaleString()}<br>
+                    ${p.text}
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // Ouvir eventos de armazenamento para sincronização
+        window.addEventListener('storage', function(event) {
+            if (event.key === storageKey) {
+                perspectives = JSON.parse(event.newValue || '[]');
+                if (perspectives.length > 0) {
+                    nextId = Math.max(...perspectives.map(p => p.id)) + 1;
+                }
+                renderPerspectives();
+            }
+        });
+
+        // Inicializar
+        loadPerspectives();
+    </script>
+</body>
+</html>

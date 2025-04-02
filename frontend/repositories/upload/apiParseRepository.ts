@@ -9,7 +9,7 @@ export class APIParseRepository {
     task: string,
     uploadIds: number[],
     option: object
-  ): Promise<string> {
+  ): Promise<any> {
     const url = `/projects/${projectId}/upload`
     const data = {
       format,
@@ -18,7 +18,7 @@ export class APIParseRepository {
       ...option
     }
     const response = await this.request.post(url, data)
-    return response.data.task_id
+    return response.data
   }
 
   revert(serverId: string): void {

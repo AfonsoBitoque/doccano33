@@ -45,6 +45,7 @@ import Seq2seqBox from '~/components/tasks/seq2seq/Seq2seqBox'
 import { useExampleItem } from '~/composables/useExampleItem'
 import { useProjectItem } from '~/composables/useProjectItem'
 import { useTextLabel } from '~/composables/useTextLabel'
+import { useTeacherList } from '~/composables/useTeacherList'
 
 export default {
   components: {
@@ -76,6 +77,7 @@ export default {
       update
     } = useTextLabel(app.$repositories.textLabel, projectId)
     const { state: exampleState, confirm, getExample, updateProgress } = useExampleItem()
+    const { state: teacherState, getTeacherList } = useTeacherList(app.$repositories.category)
     const enableAutoLabeling = ref(false)
     const imageSize = reactive({
       height: 0,
@@ -96,21 +98,27 @@ export default {
 
     const { fetch } = useFetch(async () => {
       await getExample(projectId, query.value)
-      setImageSize(exampleState.example)
-      if (enableAutoLabeling.value) {
-        try {
-          await autoLabel(projectId, exampleState.example.id)
-        } catch (e) {
-          enableAutoLabeling.value = false
+      if (exampleState.example && exampleState.example.id) {
+        setImageSize(exampleState.example)
+        if (enableAutoLabeling.value) {
+          try {
+            await autoLabel(projectId, exampleState.example.id)
+          } catch (e) {
+            enableAutoLabeling.value = false
+          }
+        } else {
+          await list(exampleState.example.id)
         }
-      } else {
-        await list(exampleState.example.id)
       }
     })
     watch(query, fetch)
     watch(enableAutoLabeling, async (val) => {
-      if (val && !exampleState.example.isConfirmed) {
-        await autoLabel(exampleState.example.id)
+      if (val && 
+          exampleState.example && 
+          exampleState.example.id && 
+          !exampleState.example.isConfirmed) {
+        await autoLabel(projectId, exampleState.example.id)
+        await getTeacherList(projectId, exampleState.example.id)
       }
     })
 
@@ -118,6 +126,7 @@ export default {
       ...toRefs(labelState),
       ...toRefs(exampleState),
       ...toRefs(projectState),
+      ...toRefs(teacherState),
       add,
       list,
       clear,
@@ -126,7 +135,8 @@ export default {
       confirm,
       enableAutoLabeling,
       imageSize,
-      projectId
+      projectId,
+      getTeacherList
     }
   }
 }

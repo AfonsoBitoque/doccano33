@@ -35,6 +35,7 @@ import {
   mdiCog,
   mdiCommentAccountOutline,
   mdiDatabase,
+  mdiForumOutline,
   mdiHome,
   mdiLabel,
   mdiPlayCircleOutline
@@ -103,6 +104,12 @@ export default {
           icon: mdiCommentAccountOutline,
           text: 'Comments',
           link: 'comments',
+          isVisible: this.isProjectAdmin
+        },
+        {
+          icon: mdiForumOutline,
+          text: 'Perspectives',
+          link: 'perspectives',
           isVisible: this.isProjectAdmin
         },
         {

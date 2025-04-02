@@ -12,8 +12,8 @@
       AdminDashboard
     },
     
-    middleware: ['check-auth', 'admin-only'],
+    layout: 'default',
     
-    layout: 'default'
+    middleware: ['check-auth', 'admin-only']
   }
   </script>

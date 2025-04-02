@@ -213,11 +213,6 @@ export default {
 
   async created() {
     this.catalog = await this.$repositories.catalog.list(this.$route.params.id)
-    this.pollData()
-  },
-
-  beforeDestroy() {
-    clearInterval(this.polling)
   },
 
   methods: {
@@ -236,31 +231,33 @@ export default {
     },
     async importDataset() {
       this.isImporting = true
-      const item = this.catalog.find((item) => item.displayName === this.selected)
-      this.taskId = await this.$repositories.parse.analyze(
-        this.$route.params.id,
-        item.name,
-        item.taskId,
-        this.uploadedFiles.map((item) => item.serverId),
-        this.option
-      )
-    },
-    pollData() {
-      this.polling = setInterval(async () => {
-        if (this.taskId) {
-          const res = await this.$repositories.taskStatus.get(this.taskId)
-          if (res.ready) {
-            this.taskId = null
-            this.errors = res.result.error
-            this.myFiles = []
-            this.uploadedFiles = []
-            this.isImporting = false
-            if (this.errors.length === 0) {
-              this.$router.push(`/projects/${this.$route.params.id}/dataset`)
-            }
-          }
+      try {
+        const item = this.catalog.find((item) => item.displayName === this.selected)
+        const response = await this.$repositories.parse.analyze(
+          this.$route.params.id,
+          item.name,
+          item.taskId,
+          this.uploadedFiles.map((item) => item.serverId),
+          this.option
+        )
+        
+        // Processar resposta síncrona diretamente
+        this.errors = response.result && response.result.error ? response.result.error : []
+        this.myFiles = []
+        this.uploadedFiles = []
+        
+        if (this.errors.length === 0) {
+          this.$router.push(`/projects/${this.$route.params.id}/dataset`)
         }
-      }, 3000)
+      } catch (error) {
+        if (error.response && error.response.data && error.response.data.error) {
+          this.errors = error.response.data.error
+        } else {
+          console.error('Erro na importação:', error)
+        }
+      } finally {
+        this.isImporting = false
+      }
     },
     toVisualize(text) {
       if (text === '\t') {

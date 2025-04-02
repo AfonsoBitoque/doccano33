@@ -155,7 +155,7 @@ class AutomatedLabeling(generics.CreateAPIView):
         project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         example = project.examples.get(pk=self.request.query_params["example"])
         configs = AutoLabelingConfig.objects.filter(project=project)
-        # Todo: make async calls or celery tasks to reduce waiting time.
+        # Processamento síncrono direto
         for config in configs:
             labels = execute_pipeline(example.data, config=config)
             labels.save(project, example, self.request.user)
